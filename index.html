@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة اختيار الكلمات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+            direction: rtl;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            color: #2e8b57;
+            margin-top: 0;
+        }
+        .arabic-word {
+            font-size: 48px;
+            margin: 20px 0;
+            color: #006400;
+            flex-grow: 0;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+            flex-grow: 0;
+        }
+        .option {
+            padding: 10px;
+            background-color: #e6f7e6;
+            border: 2px solid #2e8b57;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            background-color: #c1e1c1;
+        }
+        .score-time {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .score {
+            color: #2e8b57;
+            font-weight: bold;
+        }
+        .time {
+            color: #d2691e;
+            font-weight: bold;
+        }
+        .result {
+            font-size: 24px;
+            margin: 20px 0;
+            min-height: 30px;
+            flex-grow: 0;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .game-over {
+            font-size: 24px;
+            color: #2e8b57;
+            font-weight: bold;
+            margin: 20px 0;
+            flex-grow: 0;
+        }
+        .restart {
+            padding: 10px 20px;
+            background-color: #2e8b57;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+        .restart:hover {
+            background-color: #3cb371;
+        }
+        
+        /* Castle building area */
+        .castle-area {
+            height: 250px;
+            margin: 20px 0;
+            position: relative;
+            background-color: #f5f5dc;
+            border-radius: 10px;
+            flex-grow: 1;
+            min-height: 250px;
+        }
+        
+        /* Castle parts */
+        .castle-base {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #8B4513;
+            display: none;
+        }
+        
+        .castle-wall {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 80px;
+            background-color: #D2B48C;
+            border: 5px solid #8B4513;
+            display: none;
+        }
+        
+        .castle-tower-left {
+            position: absolute;
+            bottom: 40px;
+            left: 30%;
+            width: 60px;
+            height: 120px;
+            background-color: #D2B48C;
+            border: 5px solid #8B4513;
+            border-radius: 10px 10px 0 0;
+            display: none;
+        }
+        
+        .castle-tower-right {
+            position: absolute;
+            bottom: 40px;
+            right: 30%;
+            width: 60px;
+            height: 120px;
+            background-color: #D2B48C;
+            border: 5px solid #8B4513;
+            border-radius: 10px 10px 0 0;
+            display: none;
+        }
+        
+        .castle-roof {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 40px;
+            background-color: #A0522D;
+            clip-path: polygon(0% 100%, 10% 0%, 90% 0%, 100% 100%);
+            display: none;
+        }
+        
+        .castle-flag {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            width: 30px;
+            height: 40px;
+            background-color: #FF0000;
+            clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+            display: none;
+        }
+        
+        /* Confetti styles */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            animation: confetti-fall 5s ease-in-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(1000px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Progress indicator */
+        .progress-indicator {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #2e8b57;
+        }
+        
+        /* Celebration animation */
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .celebrate {
+            animation: celebrate 1s ease-in-out;
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 800px) {
+            .container {
+                min-height: 600px;
+                padding: 15px;
+            }
+            .castle-area {
+                height: 200px;
+                min-height: 200px;
+            }
+            .arabic-word {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vegetable Words Game</h1>
+        <div class="score-time">
+            <div class="score">النقاط: <span id="score">0</span></div>
+            <div class="time">الوقت المتبقي: <span id="time">05:00</span></div>
+        </div>
+        <div class="progress-indicator">بناء القلعة: <span id="progress">0</span>/4</div>
+        
+        <div class="castle-area">
+            <div class="castle-base" id="castle-base"></div>
+            <div class="castle-wall" id="castle-wall"></div>
+            <div class="castle-tower-left" id="castle-tower-left"></div>
+            <div class="castle-tower-right" id="castle-tower-right"></div>
+            <div class="castle-roof" id="castle-roof"></div>
+            <div class="castle-flag" id="castle-flag"></div>
+        </div>
+        
+        <div id="arabic-word" class="arabic-word"></div>
+        <div class="options" id="options"></div>
+        <div id="result" class="result"></div>
+        <div id="game-over" class="game-over"></div>
+        <button id="restart" class="restart" style="display: none;">إعادة التشغيل</button>
+    </div>
+
+    <script>
+        // Game data
+        const words = [
+            { arabic: "كرنب", english: "Cabbage" },
+            { arabic: "جزر", english: "Carrot" },
+            { arabic: "بصل", english: "Onion" },
+            { arabic: "قرع", english: "Pumpkin" }
+        ];
+
+        // Game variables
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let timeLeft = 300; // 5 minutes in seconds
+        let timer;
+        let gameActive = true;
+        let questionsAnswered = 0;
+        const totalQuestions = words.length;
+        let correctAnswers = 0;
+
+        // DOM elements
+        const arabicWordElement = document.getElementById('arabic-word');
+        const optionsElement = document.getElementById('options');
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const resultElement = document.getElementById('result');
+        const gameOverElement = document.getElementById('game-over');
+        const restartButton = document.getElementById('restart');
+        const progressElement = document.getElementById('progress');
+        
+        // Castle parts
+        const castleParts = [
+            document.getElementById('castle-base'),
+            document.getElementById('castle-wall'),
+            document.getElementById('castle-tower-left'),
+            document.getElementById('castle-tower-right'),
+            document.getElementById('castle-roof'),
+            document.getElementById('castle-flag')
+        ];
+
+        // Initialize the game
+        function initGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+            timeLeft = 300;
+            questionsAnswered = 0;
+            correctAnswers = 0;
+            gameActive = true;
+            
+            scoreElement.textContent = score;
+            progressElement.textContent = correctAnswers;
+            updateTimerDisplay();
+            gameOverElement.textContent = '';
+            resultElement.textContent = '';
+            restartButton.style.display = 'none';
+            
+            // Hide all castle parts
+            castleParts.forEach(part => part.style.display = 'none');
+            
+            showQuestion();
+            startTimer();
+        }
+
+        // Show a question
+        function showQuestion() {
+            if (currentQuestionIndex >= words.length || !gameActive) {
+                endGame();
+                return;
+            }
+
+            const currentWord = words[currentQuestionIndex];
+            arabicWordElement.textContent = currentWord.arabic;
+
+            // Create options (shuffled)
+            const options = shuffleArray([
+                currentWord.english,
+                ...words.filter(w => w.english !== currentWord.english)
+                       .map(w => w.english)
+                       .sort(() => Math.random() - 0.5)
+                       .slice(0, 3) // Get 3 random wrong answers
+            ]);
+
+            optionsElement.innerHTML = '';
+            options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => checkAnswer(option));
+                optionsElement.appendChild(optionElement);
+            });
+        }
+
+        // Check the answer
+        function checkAnswer(selectedAnswer) {
+            if (!gameActive) return;
+            
+            const currentWord = words[currentQuestionIndex];
+            questionsAnswered++;
+            
+            if (selectedAnswer === currentWord.english) {
+                score += 10;
+                correctAnswers++;
+                scoreElement.textContent = score;
+                progressElement.textContent = correctAnswers;
+                resultElement.textContent = "Correct! صحيح!";
+                resultElement.className = "result correct";
+                
+                // Build castle part
+                buildCastlePart(correctAnswers);
+                
+                // Small celebration for each correct answer
+                createConfetti(20);
+                celebrateAnimation();
+            } else {
+                resultElement.textContent = `Incorrect! The correct answer is ${currentWord.english}. غير صحيح! الجواب الصحيح هو ${currentWord.english}`;
+                resultElement.className = "result incorrect";
+            }
+
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < words.length && questionsAnswered < totalQuestions) {
+                setTimeout(() => {
+                    resultElement.textContent = '';
+                    showQuestion();
+                }, 1500);
+            } else {
+                setTimeout(endGame, 1500);
+            }
+        }
+        
+        // Build castle part based on correct answers
+        function buildCastlePart(step) {
+            if (step <= castleParts.length) {
+                castleParts[step - 1].style.display = 'block';
+            }
+        }
+        
+        // Create confetti effect
+        function createConfetti(count) {
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Celebration animation
+        function celebrateAnimation() {
+            const container = document.querySelector('.container');
+            container.classList.add('celebrate');
+            setTimeout(() => {
+                container.classList.remove('celebrate');
+            }, 1000);
+        }
+
+        // Shuffle array function
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Timer functions
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // End the game
+        function endGame() {
+            gameActive = false;
+            clearInterval(timer);
+            
+            arabicWordElement.textContent = '';
+            optionsElement.innerHTML = '';
+            resultElement.textContent = '';
+            
+            if (correctAnswers === totalQuestions) {
+                gameOverElement.textContent = `مبروك! لقد بنيت القلعة بالكامل! Your final score is ${score}. درجتك النهائية هي ${score}`;
+                // Big celebration for perfect score
+                createConfetti(100);
+                celebrateAnimation();
+            } else {
+                gameOverElement.textContent = `Game Over! اللعبة انتهت! Your final score is ${score}. درجتك النهائية هي ${score}`;
+            }
+            
+            restartButton.style.display = 'block';
+        }
+
+        // Restart the game
+        restartButton.addEventListener('click', initGame);
+
+        // Start the game when the page loads
+        window.onload = initGame;
+    </script>
+</body>
+</html>
